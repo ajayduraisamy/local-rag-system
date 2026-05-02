@@ -1,159 +1,260 @@
-# RAG System - Complete Documentation
+# 🤖 RAG System - Retrieval-Augmented Generation
 
-A production-level Retrieval-Augmented Generation (RAG) system with a modern ChatGPT-like UI.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-0.109.0-green?style=flat-square&logo=fastapi" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=nextdotjs" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind%20CSS-3.3-38B2AC?style=flat-square&logo=tailwindcss" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/ChromaDB-Vector%20DB-orange?style=flat-square" alt="ChromaDB" />
+  <img src="https://img.shields.io/badge/Ollama-qwen3%3A4b-purple?style=flat-square" alt="Ollama" />
+</p>
+
+<p align="center">
+  <strong>A production-ready RAG (Retrieval-Augmented Generation) system with a modern ChatGPT-like interface</strong>
+</p>
+
+<p align="center">
+  <a href="#overview">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#api-documentation">API</a> •
+  <a href="#frontend-preview">Preview</a>
+</p>
+
+---
 
 ## 📋 Table of Contents
 
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
+- [Features](#features)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [Running the Application](#running-the-application)
 - [API Documentation](#api-documentation)
-- [Usage Guide](#usage-guide)
-- [Session Management](#session-management)
+- [Session Management](#session-management-memory)
 - [Testing](#testing)
+- [Frontend Preview](#frontend-preview)
+- [Performance Optimizations](#performance-optimizations)
 - [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## 🎯 Overview
 
-This RAG system enables you to:
-- Ingest documents (text files, raw text)
-- Convert documents into vector embeddings
-- Store embeddings in ChromaDB (vector database)
-- Retrieve relevant context based on user queries
-- Generate accurate answers using local LLM (Ollama with qwen3:4b)
-- Maintain conversation history with session-based memory
-- Chat via a modern Next.js frontend interface
+This is a complete **Retrieval-Augmented Generation (RAG)** system that enables you to:
+
+- ✅ Ingest documents (text files or raw text)
+- ✅ Convert documents into vector embeddings using `sentence-transformers`
+- ✅ Store embeddings in **ChromaDB** (vector database)
+- ✅ Retrieve relevant context based on user queries
+- ✅ Generate accurate answers using **local LLM** (Ollama with `qwen3:4b`)
+- ✅ Maintain conversation history with **session-based memory**
+- ✅ Chat via a modern **Next.js** frontend with dark theme
+
+---
 
 ## 🏗 Architecture
 
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          RAG System Architecture                        │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐     HTTP/REST API     ┌──────────────────────────────┐
+│                 │ ◄───────────────────► │                              │
+│   Frontend      │                       │     Backend (FastAPI)        │
+│   (Next.js)     │                       │                              │
+│                 │                       │  ┌────────────────────────┐  │
+│  ┌───────────┐  │                       │  │   RAG Service          │  │
+│  │ Chat UI   │  │                       │  │   - Orchestration      │  │
+│  └───────────┘  │                       │  └──────────┬───────────┘  │
+│  ┌───────────┐  │                       │             │              │
+│  │Session Mgmt│  │                       │  ┌──────────▼───────────┐  │
+│  └───────────┘  │                       │  │ Embedding Service    │  │
+│  ┌───────────┐  │                       │  │ - sentence-transformers│ │
+│  │ API Client │  │                       │  └──────────┬───────────┘  │
+│  └───────────┘  │                       │             │              │
+└─────────────────┘                       │  ┌──────────▼───────────┐  │
+                                         │  │ Retriever Service    │  │
+                                         │  │ - Vector Search      │  │
+                                         │  └──────────┬───────────┘  │
+                                         │             │              │
+                                         │  ┌──────────▼───────────┐  │
+                                         │  │ LLM Service          │  │
+                                         │  │ - Ollama Integration │  │
+                                         │  │ - qwen3:4b Model    │  │
+                                         │  └──────────┬───────────┘  │
+                                         │             │              │
+                                         └─────────────┼──────────────┘
+                                                          │
+                          ┌───────────────────────────────┼───────────────────────────────┐
+                          │                               │                               │
+                   ┌──────▼──────┐                ┌───────▼───────┐                ┌──────▼──────┐
+                   │  ChromaDB   │                │   Ollama LLM  │                │   Document  │
+                   │  (Vectors)  │                │   (qwen3:4b)  │                │  Ingestion  │
+                   └─────────────┘                └───────────────┘                └─────────────┘
 ```
-┌─────────────────┐     HTTP API      ┌──────────────────┐
-│   Frontend      │ ◄──────────────► │    Backend       │
-│   (Next.js)     │                   │   (FastAPI)      │
-│                 │                   │                  │
-│ - Chat UI       │                   │ - RAG Service    │
-│ - Session Mgmt  │                   │ - Embedding Svc  │
-│ - API Client    │                   │ - LLM Service    │
-└─────────────────┘                   │ - Retriever Svc  │
-                                      │ - Session Svc    │
-                                      └────────┬─────────┘
-                                               │
-                    ┌──────────────────────────┼──────────────────────────┐
-                    │                          │                          │
-            ┌───────▼────────┐         ┌──────▼──────┐         ┌────────▼────────┐
-            │  ChromaDB      │         │ Ollama LLM  │         │  Document      │
-            │  (Vectors)     │         │ (qwen3:4b)  │         │  Ingestion     │
-            └────────────────┘         └─────────────┘         └────────────────┘
-```
+
+---
 
 ## 🛠 Tech Stack
 
 ### Backend
-- **Python 3.10+**
-- **FastAPI** - Modern web framework
-- **ChromaDB** - Vector database
-- **sentence-transformers** - Embedding generation
-- **Ollama** - Local LLM runtime
-- **qwen3:4b** - Language model
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Python** | 3.10+ | Programming Language |
+| **FastAPI** | 0.109.0 | Web Framework |
+| **ChromaDB** | 0.4.22 | Vector Database |
+| **sentence-transformers** | 2.2.2 | Embedding Generation |
+| **Ollama** | Latest | Local LLM Runtime |
+| **qwen3:4b** | Latest | Language Model |
 
 ### Frontend
-- **Next.js 14** (App Router)
-- **TypeScript**
-- **Tailwind CSS**
-- **Fetch API**
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Next.js** | 14 | React Framework |
+| **TypeScript** | 5.0+ | Type Safety |
+| **Tailwind CSS** | 3.3+ | Styling |
+| **React** | 18.2+ | UI Library |
+
+---
+
+## ✨ Features
+
+### Backend Features
+- 🚀 **FastAPI** with automatic OpenAPI documentation
+- 📄 **Document Ingestion** - Support for text files and raw text
+- 🔍 **Vector Search** - Efficient similarity search with ChromaDB
+- 🧠 **Session Memory** - Maintains conversation context (last 10 messages)
+- 🤖 **Local LLM** - No API costs, runs entirely locally
+- 📦 **Batch Processing** - Efficient chunk embedding
+
+### Frontend Features
+- 🎨 **Dark Theme** - ChatGPT-like modern interface
+- 💬 **Real-time Chat** - Instant message updates
+- 🔄 **Auto-scroll** - Automatically scrolls to latest message
+- ⏳ **Loading States** - "Thinking..." indicator
+- ⚠️ **Error Handling** - Graceful error display
+- 📱 **Responsive Design** - Works on desktop and mobile
+- 🧠 **Session Memory** - Maintains conversation context
+
+---
 
 ## 📁 Project Structure
 
-```
+```text
 rag/
-├── rag-backend/                    # Python FastAPI Backend
-│   ├── app/
+├── 📂 rag-backend/                    # Python FastAPI Backend
+│   ├── 📂 app/
 │   │   ├── main.py                # FastAPI app entry point
-│   │   ├── routes/
+│   │   ├── 📂 routes/
 │   │   │   ├── query.py           # Query endpoint with session support
 │   │   │   └── ingest.py          # Document ingestion endpoint
-│   │   ├── services/
+│   │   ├── 📂 services/
 │   │   │   ├── rag_service.py     # Main RAG orchestration
 │   │   │   ├── embedding_service.py  # Text to vector embeddings
 │   │   │   ├── llm_service.py     # Ollama LLM integration
 │   │   │   ├── retriever_service.py   # Vector similarity search
 │   │   │   └── session_service.py # Conversation memory
-│   │   ├── utils/
+│   │   ├── 📂 utils/
 │   │   │   ├── chunking.py        # Text splitting logic
 │   │   │   └── prompt_builder.py  # LLM prompt construction
-│   │   └── db/
+│   │   └── 📂 db/
 │   │       └── chroma_client.py   # ChromaDB client wrapper
-│   ├── data/                      # Persistent storage
-│   └── requirements.txt           # Python dependencies
+│   ├── 📂 data/                      # Persistent storage (ChromaDB)
+│   └── requirements.txt              # Python dependencies
 │
-├── rag-frontend/                   # Next.js Frontend
-│   ├── app/
-│   │   ├── chat/
-│   │   │   └── page.tsx           # Main chat interface
-│   │   ├── layout.tsx             # Root layout
-│   │   ├── page.tsx               # Redirects to /chat
-│   │   └── globals.css            # Global styles
-│   ├── components/
-│   │   ├── ChatContainer.tsx      # Message list with auto-scroll
-│   │   ├── ChatInput.tsx          # Input field with send button
-│   │   └── ChatMessage.tsx        # Individual message bubble
-│   ├── lib/
-│   │   └── api.ts                 # Backend API client
-│   ├── types/
-│   │   └── chat.ts                # TypeScript type definitions
-│   ├── package.json               # Node dependencies
-│   ├── tsconfig.json              # TypeScript config
-│   ├── tailwind.config.js         # Tailwind CSS config
-│   └── next.config.js             # Next.js config
+├── 📂 rag-frontend/                   # Next.js Frontend
+│   ├── 📂 app/
+│   │   ├── 📂 chat/
+│   │   │   └── page.tsx              # Main chat interface
+│   │   ├── layout.tsx                # Root layout
+│   │   ├── page.tsx                  # Redirects to /chat
+│   │   └── globals.css               # Global styles
+│   ├── 📂 components/
+│   │   ├── ChatContainer.tsx         # Message list with auto-scroll
+│   │   ├── ChatInput.tsx             # Input field with send button
+│   │   └── ChatMessage.tsx           # Individual message bubble
+│   ├── 📂 lib/
+│   │   └── api.ts                    # Backend API client
+│   ├── 📂 types/
+│   │   └── chat.ts                   # TypeScript type definitions
+│   ├── package.json                  # Node dependencies
+│   ├── tsconfig.json                 # TypeScript config
+│   ├── tailwind.config.js            # Tailwind CSS config
+│   └── next.config.js                # Next.js config
 │
-└── README.md                       # This file
+└── README.md                         # This file
 ```
+
+---
 
 ## ⚙️ Installation
 
 ### Prerequisites
 
-1. **Python 3.10+** installed
-2. **Node.js 18+** installed
-3. **Ollama** installed and running
+| Requirement | Version | Installation Link |
+|------------|---------|-------------------|
+| Python | 3.10+ | [python.org](https://www.python.org/downloads/) |
+| Node.js | 18+ | [nodejs.org](https://nodejs.org/) |
+| Ollama | Latest | [ollama.com](https://ollama.com) |
 
 ### Step 1: Install Ollama and Pull Model
 
 ```bash
-# Install Ollama (if not installed)
-# Visit https://ollama.com for installation
+# Install Ollama from https://ollama.com
 
 # Pull the required model
 ollama pull qwen3:4b
+
+# Verify installation
+ollama list
 ```
 
 ### Step 2: Backend Setup
 
 ```bash
+# Navigate to backend directory
 cd rag-backend
 
 # Create virtual environment (recommended)
 python -m venv venv
-.\venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Linux/Mac
+
+# Activate virtual environment
+# Windows:
+.\venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-**Note:** If you encounter dependency conflicts, install compatible versions:
+<details>
+<summary>⚠️ Having dependency issues? Click here</summary>
+
 ```bash
+# Install compatible versions manually
 pip install fastapi==0.109.0 uvicorn[standard]==0.27.0
 pip install chromadb==0.4.22 sentence-transformers==2.2.2
 pip install python-multipart==0.0.6 pydantic==2.5.3 requests==2.31.0
+
+# If you encounter 'nn' not defined error:
+pip install transformers==4.36.2
 ```
+</details>
 
 ### Step 3: Frontend Setup
 
 ```bash
+# Navigate to frontend directory
 cd rag-frontend
 
 # Install dependencies
@@ -162,6 +263,36 @@ npm install
 # Or using yarn
 yarn install
 ```
+
+---
+
+## 🔧 Configuration
+
+### Backend Configuration
+
+**Change Embedding Model** - Edit `app/services/embedding_service.py`:
+```python
+class EmbeddingService:
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+        self.model = SentenceTransformer(model_name)
+```
+
+**Change LLM Settings** - Edit `app/services/llm_service.py`:
+```python
+def __init__(self, base_url: str = "http://localhost:11434", model: str = "qwen3:4b"):
+    ...
+    "temperature": 0.7,  # Adjust creativity (0.0 - 1.0)
+    "top_p": 0.9         # Adjust randomness (0.0 - 1.0)
+```
+
+### Frontend Configuration
+
+**Change Backend URL** - Edit `lib/api.ts`:
+```typescript
+const res = await fetch("http://localhost:8000/query/", ...);
+```
+
+---
 
 ## 🚀 Running the Application
 
@@ -172,8 +303,10 @@ cd rag-backend
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Backend will be available at: http://localhost:8000
-API docs: http://localhost:8000/docs
+**Backend will be available at:**
+- 🌐 API: http://localhost:8000
+- 📚 API Docs (Swagger): http://localhost:8000/docs
+- 📖 ReDoc: http://localhost:8000/redoc
 
 ### Start Frontend Server
 
@@ -182,7 +315,10 @@ cd rag-frontend
 npm run dev
 ```
 
-Frontend will be available at: http://localhost:3000/chat
+**Frontend will be available at:**
+- 🌐 Chat Interface: http://localhost:3000/chat
+
+---
 
 ## 📡 API Documentation
 
@@ -192,12 +328,14 @@ Frontend will be available at: http://localhost:3000/chat
 
 **Content-Type:** `multipart/form-data`
 
-**Parameters:**
-- `file` (optional): Text file to upload
-- `text` (optional): Raw text string
-- `metadata` (optional): JSON string with metadata
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `file` | File | Optional | Text file to upload |
+| `text` | String | Optional | Raw text string |
+| `metadata` | JSON String | Optional | Additional metadata |
 
-**Example:**
+**Examples:**
+
 ```bash
 # Ingest raw text
 curl -X POST "http://localhost:8000/ingest/" \
@@ -218,6 +356,8 @@ curl -X POST "http://localhost:8000/ingest/" \
   "chunks": 5
 }
 ```
+
+---
 
 ### 2. Query with Session Memory
 
@@ -251,6 +391,8 @@ curl -X POST "http://localhost:8000/query/" \
 }
 ```
 
+---
+
 ### 3. Clear Session
 
 **Endpoint:** `DELETE /query/{session_id}`
@@ -260,14 +402,18 @@ curl -X POST "http://localhost:8000/query/" \
 curl -X DELETE "http://localhost:8000/query/session-123"
 ```
 
+---
+
 ## 💬 Session Management (Memory)
 
-The RAG system now supports conversation memory using session IDs:
+The RAG system supports **conversation memory** using session IDs:
 
-- Each chat session has a unique `session_id`
-- Previous messages in the session are included in the LLM prompt
-- Last 10 messages are retained per session
-- Sessions persist in memory while backend is running
+| Feature | Description |
+|---------|-------------|
+| **Session ID** | Each chat session has a unique identifier |
+| **Context Retention** | Previous messages included in LLM prompt |
+| **Message Limit** | Last 10 messages retained per session |
+| **Persistence** | Sessions persist in memory while backend is running |
 
 **Frontend Implementation:**
 - Session ID is auto-generated on page load
@@ -282,6 +428,8 @@ Assistant: [Answers based on ingested docs]
 User: "How does it differ from deep learning?"  ← Context retained
 Assistant: [Answers with knowledge of previous question]
 ```
+
+---
 
 ## 🧪 Testing
 
@@ -308,108 +456,165 @@ curl -X POST "http://localhost:8000/query/" \
 3. Verify response appears
 4. Check browser console for any errors
 
-## 🎨 Frontend Features
+---
 
-- **Dark Theme**: ChatGPT-like dark interface
-- **Auto-scroll**: Automatically scrolls to latest message
-- **Loading States**: Shows "Thinking..." while waiting
-- **Error Handling**: Displays connection errors
-- **Session Memory**: Maintains conversation context
-- **Responsive Design**: Works on desktop and mobile
+## 🎨 Frontend Preview
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│  🤖 RAG Chat System                     [🔄 New Chat]  │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  🤖  Hello! I'm your RAG assistant. Ask me anything    │
+│     about the documents you've ingested.                │
+│                                                         │
+│         💬 What is machine learning?                    │
+│                                                         │
+│  🤖  Machine learning is a subset of AI that enables   │
+│     systems to learn from data...                       │
+│                                                         │
+│         💬 How does it work?                            │
+│                                                         │
+│  🤖  It works by... [uses context from previous Q&A]   │
+│                                                         │
+│                                                         │
+├─────────────────────────────────────────────────────────┤
+│  [Type your message...               ]  [📤 Send]      │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## ⚡ Performance Optimizations
 
-1. **Early Return in Retrieval**: Returns immediately if no relevant context found
-2. **Session-based Caching**: Avoids re-processing same session queries
-3. **Chunked Embeddings**: Efficient batch processing
-4. **Cosine Similarity**: Fast vector search with ChromaDB
+| Optimization | Description |
+|--------------|-------------|
+| **Early Return** | Returns immediately if no relevant context found |
+| **Session Caching** | Avoids re-processing same session queries |
+| **Chunked Embeddings** | Efficient batch processing |
+| **Cosine Similarity** | Fast vector search with ChromaDB |
 
-## 🔧 Configuration
-
-### Backend Configuration
-
-Edit `app/services/embedding_service.py` to change embedding model:
-```python
-class EmbeddingService:
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        self.model = SentenceTransformer(model_name)
-```
-
-Edit `app/services/llm_service.py` to change LLM settings:
-```python
-def __init__(self, base_url: str = "http://localhost:11434", model: str = "qwen3:4b"):
-    ...
-    "temperature": 0.7,  # Adjust creativity
-    "top_p": 0.9         # Adjust randomness
-```
-
-### Frontend Configuration
-
-Edit `lib/api.ts` to change backend URL:
-```typescript
-const res = await fetch("http://localhost:8000/query/", ...);
-```
+---
 
 ## ❗ Troubleshooting
 
 ### Backend Issues
 
-**Problem:** `NameError: name 'nn' is not defined`
+<details>
+<summary>🔴 <code>NameError: name 'nn' is not defined</code></summary>
+
 **Solution:** Install compatible versions:
 ```bash
 pip install transformers==4.36.2 sentence-transformers==2.2.2
 ```
+</details>
 
-**Problem:** Ollama connection error
+<details>
+<summary>🔴 Ollama connection error</summary>
+
 **Solution:** Ensure Ollama is running:
 ```bash
 ollama serve
 ollama pull qwen3:4b
 ```
+</details>
 
-**Problem:** ChromaDB persistence error
-**Solution:** Check `data/` directory permissions
+<details>
+<summary>🔴 ChromaDB persistence error</summary>
+
+**Solution:** Check `data/` directory permissions and ensure it exists.
+</details>
 
 ### Frontend Issues
 
-**Problem:** CORS errors
-**Solution:** Backend already includes CORS middleware for all origins
+<details>
+<summary>🔴 CORS errors</summary>
 
-**Problem:** Can't connect to backend
-**Solution:** Ensure backend is running on port 8000
+**Solution:** Backend already includes CORS middleware for all origins. If issues persist, check backend is running.
+</details>
 
-## 📝 Development Notes
+<details>
+<summary>🔴 Can't connect to backend</summary>
 
-- Backend uses in-memory session storage (resets on restart)
-- For production, consider Redis or database-backed sessions
-- ChromaDB persists to `data/chroma_db/` directory
-- LLM calls have 120-second timeout
-
-## 🔒 Security Considerations
-
-For production deployment:
-1. Add authentication to API endpoints
-2. Use proper CORS origins (not `*`)
-3. Validate and sanitize all inputs
-4. Rate limit API endpoints
-5. Use HTTPS in production
-6. Consider containerization (Docker)
-
-## 📄 License
-
-MIT License
-
-## 👥 Contributing
-
-1. Fork the repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Create Pull Request
+**Solution:** Ensure backend is running on port 8000 and CORS is enabled.
+</details>
 
 ---
 
-**Last Updated:** May 2026
-**Version:** 1.0.0
-#   l o c a l - r a g - s y s t e m  
- 
+## 📝 Development Notes
+
+- Backend uses **in-memory session storage** (resets on restart)
+- For production, consider **Redis** or database-backed sessions
+- ChromaDB persists to `data/chroma_db/` directory
+- LLM calls have **120-second timeout**
+- All embeddings are computed locally (no external API calls)
+
+---
+
+## 🔒 Security Considerations
+
+For **production deployment**, implement these:
+
+- [ ] Add authentication to API endpoints
+- [ ] Use proper CORS origins (not `*`)
+- [ ] Validate and sanitize all inputs
+- [ ] Rate limit API endpoints
+- [ ] Use HTTPS in production
+- [ ] Consider containerization (Docker)
+- [ ] Add request/response logging
+- [ ] Implement input size limits
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can contribute:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
+3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** to the branch (`git push origin feature/AmazingFeature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+
+- Follow PEP 8 for Python code
+- Use TypeScript strict mode for frontend
+- Write meaningful commit messages
+- Add tests for new features
+- Update documentation as needed
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👥 Authors & Acknowledgments
+
+- **Developer:** [Your Name]
+- **Built with:** FastAPI, Next.js, ChromaDB, Ollama
+
+Special thanks to the open-source community!
+
+---
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+
+- 🐛 [Open an Issue](https://github.com/yourusername/rag-system/issues)
+- 💬 [Discussions](https://github.com/yourusername/rag-system/discussions)
+
+---
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Made%20with-❤️-red?style=flat-square" alt="Made with Love" />
+  <img src="https://img.shields.io/badge/Open%20Source-MIT-green?style=flat-square" alt="Open Source" />
+</p>
+
+<p align="center">
+  <sub>Built with modern technologies for the AI community 🚀</sub>
+</p>
