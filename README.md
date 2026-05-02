@@ -496,50 +496,6 @@ curl -X POST "http://localhost:8000/query/" \
 
 ---
 
-## ❗ Troubleshooting
-
-### Backend Issues
-
-<details>
-<summary>🔴 <code>NameError: name 'nn' is not defined</code></summary>
-
-**Solution:** Install compatible versions:
-```bash
-pip install transformers==4.36.2 sentence-transformers==2.2.2
-```
-</details>
-
-<details>
-<summary>🔴 Ollama connection error</summary>
-
-**Solution:** Ensure Ollama is running:
-```bash
-ollama serve
-ollama pull qwen3:4b
-```
-</details>
-
-<details>
-<summary>🔴 ChromaDB persistence error</summary>
-
-**Solution:** Check `data/` directory permissions and ensure it exists.
-</details>
-
-### Frontend Issues
-
-<details>
-<summary>🔴 CORS errors</summary>
-
-**Solution:** Backend already includes CORS middleware for all origins. If issues persist, check backend is running.
-</details>
-
-<details>
-<summary>🔴 Can't connect to backend</summary>
-
-**Solution:** Ensure backend is running on port 8000 and CORS is enabled.
-</details>
-
----
 
 ## 📝 Development Notes
 
@@ -586,29 +542,18 @@ Contributions are welcome! Here's how you can contribute:
 
 ---
 
-## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 👥 Authors & Acknowledgments
 
-- **Developer:** [Your Name]
+- **Developer:** [Ajay]
 - **Built with:** FastAPI, Next.js, ChromaDB, Ollama
 
 Special thanks to the open-source community!
 
 ---
 
-## 📞 Support
 
-If you encounter any issues or have questions:
-
-- 🐛 [Open an Issue](https://github.com/yourusername/rag-system/issues)
-- 💬 [Discussions](https://github.com/yourusername/rag-system/discussions)
-
----
 
 <p align="center">
   <img src="https://img.shields.io/badge/Made%20with-❤️-red?style=flat-square" alt="Made with Love" />
